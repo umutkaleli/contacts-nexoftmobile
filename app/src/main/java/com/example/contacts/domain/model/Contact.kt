@@ -9,6 +9,7 @@ data class Contact(
     // Determines if the contact exists in the local device storage.
     val isSavedInDevice: Boolean = false
 ) {
+    // Extra property to show full name if UI needs it.
     val fullName: String
         get() = "$firstName $lastName"
 }
