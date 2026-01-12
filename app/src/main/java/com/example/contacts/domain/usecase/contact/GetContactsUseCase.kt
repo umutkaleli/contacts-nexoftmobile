@@ -14,7 +14,7 @@ class GetContactsUseCase(
             when (result) {
                 is NetworkResult.Success -> {
                     // Sorting alphabetically (A-Z) by first name.
-                    val sortedList = result.data?.sortedBy { it.firstName.lowercase() } ?: emptyList()
+                    val sortedList = result.data?.sortedBy { it.firstName?.lowercase() } ?: emptyList()
                     NetworkResult.Success(sortedList)
                 }
                 else -> result
