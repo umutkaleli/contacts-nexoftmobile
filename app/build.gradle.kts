@@ -78,4 +78,7 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+
+    // Gson kütüphanesi
+    implementation("com.google.code.gson:gson:2.11.0")
 }
