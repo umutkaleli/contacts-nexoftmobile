@@ -1,5 +1,6 @@
 package com.example.contacts.data.repository
 
+import android.util.Log
 import com.example.contacts.data.local.dao.ContactDao
 import com.example.contacts.data.mapper.toCreateUserRequest
 import com.example.contacts.data.mapper.toDomain
@@ -26,18 +27,30 @@ class ContactDataRepository(
         // Sync remote
         try {
             val response = api.getUsers()
-            if (response.isSuccessful && response.body()?.success == true) {
-                val remoteUsers = response.body()?.data?.users ?: emptyList()
 
-                // Refreshing cache for not allowing conflicts
-                dao.clearAll()
-                dao.insertContacts(remoteUsers.map { it.toEntity() })
+
+            val body = response.body()
+
+            if (response.isSuccessful && body?.success == true) {
+                val remoteUsers = body.data?.users ?: emptyList()
+
+                if (remoteUsers.isNotEmpty()) {
+                    // Refreshing cache for not allowing conflicts
+                    dao.clearAll()
+                    dao.insertContacts(remoteUsers.map { it.toEntity() })
+
+                } else {
+                    Log.w("RepoDebug", "Attention: Users list is empty.")
+                }
+            } else {
+                Log.e("RepoDebug", "Error: ${response.errorBody()?.string()}")
             }
         } catch (e: Exception) {
-
+            Log.e("RepoDebug", "CRASH: ${e.message}")
+            e.printStackTrace()
         }
-
         dao.getContacts().collect { entities ->
+
             if (entities.isEmpty()) {
                 emit(NetworkResult.Error("No contacts found!"))
             } else {

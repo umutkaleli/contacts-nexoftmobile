@@ -1,34 +1,40 @@
 package com.example.contacts.ui.screens.contacts
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.contacts.ui.components.ContactItem
 import com.example.contacts.ui.components.ContactsHeader
 import com.example.contacts.ui.components.ContactsSearchBar
 import com.example.contacts.ui.components.NoContactsSection
 import com.example.contacts.ui.theme.BackgroundGray
-import com.example.contacts.ui.theme.ContactsTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContactsScreen(
     onAddClick: () -> Unit,
-    onSearchClick: () -> Unit
+    onSearchClick: () -> Unit,
+    viewModel: ContactsViewModel = hiltViewModel()
 ) {
-
-    val isListEmpty = true
+    val state by viewModel.state.collectAsState()
 
     Scaffold(
         containerColor = BackgroundGray,
@@ -40,8 +46,7 @@ fun ContactsScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
 
@@ -53,7 +58,6 @@ fun ContactsScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-
             ContactsSearchBar(
                 onSearchClick = onSearchClick
             )
@@ -61,27 +65,41 @@ fun ContactsScreen(
 
             Spacer(modifier = Modifier.weight(1f))
 
-
-            if (isListEmpty) {
-                NoContactsSection(
-                    onCreateClick = onAddClick
-                )
-            } else {
-                // TODO: Kişi Listesi buraya gelecek
+            Box(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                when {
+                    state.isLoading -> {
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    }
+                    state.error != null -> {
+                        Text(text = "Error: ${state.error}", modifier = Modifier.align(Alignment.Center))
+                    }
+                    state.contacts.isEmpty() -> {
+                        NoContactsSection(
+                            onCreateClick = onAddClick,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                    else -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(bottom = 16.dp)
+                        ) {
+                            items(state.contacts) { contact ->
+                                ContactItem(
+                                    contact = contact,
+                                    onClick = { id ->
+                                        // TODO: Go Detail Screen
+                                        println("ID: $id")
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
             }
-
             Spacer(modifier = Modifier.weight(1f))
         }
-    }
-}
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun ContactsScreenPreview() {
-
-    ContactsTheme {
-        ContactsScreen(
-            onAddClick = {},
-            onSearchClick = {}
-        )
     }
 }
