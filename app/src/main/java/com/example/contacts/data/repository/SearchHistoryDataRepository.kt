@@ -15,7 +15,6 @@ class SearchHistoryDataRepository @Inject constructor(
     }
 
     override suspend fun addSearchQuery(query: String) {
-        // Timestamp o anki zaman olacak
         val entity = SearchHistoryEntity(
             query = query,
             timestamp = System.currentTimeMillis()
