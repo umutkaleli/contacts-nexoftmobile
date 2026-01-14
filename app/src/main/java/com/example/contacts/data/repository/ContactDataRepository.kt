@@ -14,6 +14,9 @@ import com.example.contacts.domain.repository.ContactRepository
 import com.example.contacts.util.NetworkResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 
 class ContactDataRepository(
@@ -136,8 +139,25 @@ class ContactDataRepository(
         }
     }
 
-    override suspend fun uploadImage(imageFile: File): NetworkResult<String> {
-        TODO("")
+    override suspend fun uploadImage(file: File): NetworkResult<String> {
+        return try {
+
+            val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+
+            val body = MultipartBody.Part.createFormData("image", file.name, requestFile)
+
+            val response = api.uploadImage(body)
+
+            if (response.isSuccessful && response.body()?.success == true) {
+
+                val url = response.body()?.data?.imageUrl ?: ""
+                NetworkResult.Success(url)
+            } else {
+                NetworkResult.Error(response.message() ?: "Upload failed")
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error(e.message ?: "Unknown error")
+        }
     }
 
 }

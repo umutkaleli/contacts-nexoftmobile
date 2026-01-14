@@ -3,12 +3,13 @@ package com.example.contacts.domain.usecase.contact
 import com.example.contacts.domain.model.NewContact
 import com.example.contacts.domain.repository.ContactRepository
 import com.example.contacts.util.NetworkResult
+import javax.inject.Inject
 
-class AddContactUseCase(private val repository: ContactRepository) {
+class AddContactUseCase @Inject constructor(private val repository: ContactRepository) {
 
     suspend operator fun invoke(newContact: NewContact): NetworkResult<Unit> {
 
-        if (newContact.firstName.isBlank() || newContact.lastName.isBlank()) {
+        if (newContact.firstName.isBlank() && newContact.lastName.isBlank()) {
             return NetworkResult.Error("Name fields cannot be empty.")
         }
         if (newContact.phoneNumber.isBlank()) {

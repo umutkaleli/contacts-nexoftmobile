@@ -5,8 +5,9 @@ import com.example.contacts.domain.repository.ContactRepository
 import com.example.contacts.util.NetworkResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
 
-class GetContactsUseCase(
+class GetContactsUseCase @Inject constructor(
     private val repository: ContactRepository
 ) {
     operator fun invoke(): Flow<NetworkResult<List<Contact>>> {

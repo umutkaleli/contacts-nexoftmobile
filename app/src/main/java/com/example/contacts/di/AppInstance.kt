@@ -4,9 +4,17 @@ import android.app.Application
 import androidx.room.Room
 import com.example.contacts.data.local.ContactsDatabase
 import com.example.contacts.data.local.dao.ContactDao
+import com.example.contacts.data.local.dao.SearchHistoryDao
 import com.example.contacts.data.remote.UserApi
 import com.example.contacts.data.repository.ContactDataRepository
+import com.example.contacts.data.repository.SearchHistoryDataRepository
 import com.example.contacts.domain.repository.ContactRepository
+import com.example.contacts.domain.repository.SearchHistoryRepository
+import com.example.contacts.domain.usecase.search.AddSearchUseCase
+import com.example.contacts.domain.usecase.search.ClearSearchHistoryUseCase
+import com.example.contacts.domain.usecase.search.DeleteSearchUseCase
+import com.example.contacts.domain.usecase.search.GetSearchHistoryUseCase
+import com.example.contacts.domain.usecase.search.SearchHistoryUseCases
 import com.example.contacts.util.Constants
 import com.example.contacts.util.Constants.BASE_URL
 import dagger.Module
@@ -88,4 +96,30 @@ object AppInstance {
     ): ContactRepository {
         return ContactDataRepository(api, dao)
     }
+
+    @Provides
+    @Singleton
+    fun provideSearchHistoryDao(database: ContactsDatabase): SearchHistoryDao {
+        return database.searchHistoryDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideSearchHistoryRepository(
+        dao: SearchHistoryDao
+    ): SearchHistoryRepository {
+        return SearchHistoryDataRepository(dao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSearchUseCases(repository: SearchHistoryRepository): SearchHistoryUseCases {
+        return SearchHistoryUseCases(
+            getSearchHistory = GetSearchHistoryUseCase(repository),
+            addSearchQuery = AddSearchUseCase(repository),
+            deleteSearchQuery = DeleteSearchUseCase(repository),
+            clearSearchHistory = ClearSearchHistoryUseCase(repository)
+        )
+    }
+
 }
