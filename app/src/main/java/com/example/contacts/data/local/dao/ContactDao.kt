@@ -13,6 +13,10 @@ interface ContactDao {
     @Query("SELECT * FROM contacts")
     fun getContacts(): Flow<List<ContactEntity>>
 
+    // Take it from the database before sync with remote
+    @Query("SELECT * FROM contacts")
+    suspend fun getContactsOnce(): List<ContactEntity>
+
     @Query("SELECT * FROM contacts WHERE id = :id")
     suspend fun getContactById(id: String): ContactEntity?
 
