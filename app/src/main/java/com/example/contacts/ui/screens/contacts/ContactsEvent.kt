@@ -9,6 +9,8 @@ sealed interface ContactsEvent {
     data object OnDismissDeleteSheet : ContactsEvent
     data object OnConfirmDelete : ContactsEvent
 
+    data object LoadContacts : ContactsEvent
+
     data object CheckDeviceContacts : ContactsEvent
 
     data class OnSearchFocusChange(val isFocused: Boolean) : ContactsEvent

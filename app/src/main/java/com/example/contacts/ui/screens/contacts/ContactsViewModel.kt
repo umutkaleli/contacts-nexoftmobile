@@ -2,7 +2,7 @@ package com.example.contacts.ui.screens.contacts
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.contacts.data.manager.DeviceContactsManager // Manager Eklendi
+import com.example.contacts.data.manager.DeviceContactsManager
 import com.example.contacts.domain.model.Contact
 import com.example.contacts.domain.usecase.contact.ContactUseCases
 import com.example.contacts.domain.usecase.search.SearchHistoryUseCases
@@ -69,6 +69,9 @@ class ContactsViewModel @Inject constructor(
             is ContactsEvent.CheckDeviceContacts -> {
                 refreshDeviceStatus()
             }
+            is ContactsEvent.LoadContacts -> {
+                getContacts()
+            }
         }
     }
 
@@ -90,7 +93,9 @@ class ContactsViewModel @Inject constructor(
     }
 
     private fun filterContacts(query: String) {
-        if (query.isBlank()) {
+        val cleanQuery = query.trim()
+
+        if (cleanQuery.isEmpty()) {
             _state.update {
                 it.copy(
                     contacts = allContacts,
@@ -101,10 +106,17 @@ class ContactsViewModel @Inject constructor(
         }
 
         val filteredList = allContacts.filter { contact ->
-            val firstNameMatch = contact.firstName?.startsWith(query, ignoreCase = true) == true
-            val lastNameMatch = contact.lastName?.startsWith(query, ignoreCase = true) == true
+            val fName = contact.firstName ?: ""
+            val lName = contact.lastName ?: ""
+            val fullName = contact.fullName
+            val cleanPhone = contact.phoneNumber?.replace(Regex("[^0-9]"), "") ?: ""
 
-            firstNameMatch || lastNameMatch
+            val firstNameMatch = fName.startsWith(cleanQuery, ignoreCase = true)
+            val lastNameMatch = lName.startsWith(cleanQuery, ignoreCase = true)
+            val fullNameMatch = fullName.startsWith(cleanQuery, ignoreCase = true)
+            val phoneMatch = cleanPhone.startsWith(cleanQuery)
+
+            firstNameMatch || lastNameMatch || fullNameMatch || phoneMatch
         }
 
         _state.update {
@@ -116,11 +128,10 @@ class ContactsViewModel @Inject constructor(
     }
 
     private fun refreshDeviceStatus() {
-        if (allContacts.isEmpty()) return // Liste boşsa işlem yapma
+        if (allContacts.isEmpty()) return
 
         viewModelScope.launch {
             allContacts = mapContactsWithDevice(allContacts)
-
             filterContacts(_state.value.searchQuery)
         }
     }
@@ -133,15 +144,12 @@ class ContactsViewModel @Inject constructor(
                 when (result) {
                     is NetworkResult.Success -> {
                         val data = result.data ?: emptyList()
-
                         allContacts = mapContactsWithDevice(data).sortedBy { it.firstName }
-
                         filterContacts(_state.value.searchQuery)
                         _state.update { it.copy(isLoading = false) }
                     }
                     is NetworkResult.Error -> {
                         _state.update { it.copy(isLoading = false, error = result.message) }
-                        sendEffect(ContactsUiEffect.ShowToast(result.message ?: "Error"))
                     }
                     is NetworkResult.Loading -> {
                         _state.update { it.copy(isLoading = true) }
@@ -156,11 +164,9 @@ class ContactsViewModel @Inject constructor(
 
         return contacts.map { contact ->
             val cleanContactNumber = contact.phoneNumber?.replace(Regex("[^0-9]"), "") ?: ""
-
             val isMatch = cleanContactNumber.isNotBlank() && deviceNumbers.any {
                 it.contains(cleanContactNumber) || cleanContactNumber.contains(it)
             }
-
             contact.copy(isInDevice = isMatch)
         }
     }
@@ -169,12 +175,11 @@ class ContactsViewModel @Inject constructor(
         val contact = _state.value.contactToDelete ?: return
 
         viewModelScope.launch {
-
             _state.update { it.copy(showDeleteSheet = false) }
 
             when (val result = contactUseCases.deleteContact(contact.id)) {
                 is NetworkResult.Success -> {
-                    sendEffect(ContactsUiEffect.ShowToast("✅ User is deleted!"))
+                    sendEffect(ContactsUiEffect.ShowToast("User is deleted!"))
 
                     val updatedList = allContacts.filterNot { it.id == contact.id }
                     allContacts = updatedList
@@ -193,7 +198,6 @@ class ContactsViewModel @Inject constructor(
                     }
                 }
                 is NetworkResult.Error -> {
-
                     _state.update { it.copy(isLoading = false) }
                     sendEffect(ContactsUiEffect.ShowToast("Failed: ${result.message}"))
                 }

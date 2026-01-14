@@ -13,6 +13,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Delete
@@ -44,7 +45,7 @@ fun ContactDetailScreen(
     viewModel: ContactDetailViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    val context = LocalContext.current
+    LocalContext.current
     val scope = rememberCoroutineScope()
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -52,6 +53,11 @@ fun ContactDetailScreen(
     var isMenuExpanded by remember { mutableStateOf(false) }
 
     var showSuccessToast by remember { mutableStateOf(false) }
+    var showDeleteToast by remember { mutableStateOf(false) }
+
+    var showErrorToast by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
+
     var isSaveClicked by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.isSavedToDevice) {
@@ -68,19 +74,31 @@ fun ContactDetailScreen(
     ) { permissions ->
         val isGranted = permissions.values.all { it }
         if (isGranted) viewModel.onEvent(ContactDetailEvent.SaveToDevice)
-        else Toast.makeText(context, "Permission needed to save contact", Toast.LENGTH_SHORT).show()
+        else {
+            errorMessage = "Permission needed to save contact"
+            showErrorToast = true
+            scope.launch {
+                delay(3000)
+                showErrorToast = false
+            }
+        }
     }
 
     LaunchedEffect(state.error) {
         state.error?.let { error ->
-            Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+            errorMessage = error
+            showErrorToast = true
+            delay(3000)
+            showErrorToast = false
             viewModel.onEvent(ContactDetailEvent.DismissError)
         }
     }
 
     LaunchedEffect(state.isDeleted) {
         if (state.isDeleted) {
-            Toast.makeText(context, "✅ User is deleted!", Toast.LENGTH_SHORT).show()
+            showDeleteToast = true
+            delay(2000)
+            showDeleteToast = false
             scope.launch { sheetState.hide() }.invokeOnCompletion {
                 if (!sheetState.isVisible) onBackClick()
             }
@@ -102,7 +120,6 @@ fun ContactDetailScreen(
                     .padding(horizontal = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Header
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -126,12 +143,11 @@ fun ContactDetailScreen(
                                     .width(180.dp),
                                 offset = DpOffset(x = (-132).dp, y = 0.dp)
                             ) {
-                                // Edit Item
                                 DropdownMenuItem(
                                     text = { Text("Edit", fontSize = 16.sp, color = Color.Black) },
                                     trailingIcon = {
                                         Icon(
-                                            imageVector = Icons.Outlined.Edit, // Outlined İcon
+                                            imageVector = Icons.Outlined.Edit,
                                             contentDescription = null,
                                             tint = Color.Black,
                                             modifier = Modifier.size(20.dp)
@@ -147,17 +163,13 @@ fun ContactDetailScreen(
                                     )
                                 )
 
-                                HorizontalDivider(
-                                    thickness = 1.dp,
-                                    color = Color(0xFFF0F0F0)
-                                )
+                                HorizontalDivider(thickness = 1.dp, color = Color(0xFFF0F0F0))
 
-                                // Delete Item
                                 DropdownMenuItem(
                                     text = { Text("Delete", fontSize = 16.sp, color = Color.Red) },
                                     trailingIcon = {
                                         Icon(
-                                            imageVector = Icons.Outlined.Delete, // Outlined İcon
+                                            imageVector = Icons.Outlined.Delete,
                                             contentDescription = null,
                                             tint = Color.Red,
                                             modifier = Modifier.size(20.dp)
@@ -189,25 +201,20 @@ fun ContactDetailScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Text Fields
                 FigmaContactTextField(
                     value = state.contact?.firstName ?: "",
                     onValueChange = {},
                     placeholder = "First Name",
                     enabled = false
                 )
-
                 Spacer(modifier = Modifier.height(16.dp))
-
                 FigmaContactTextField(
                     value = state.contact?.lastName ?: "",
                     onValueChange = {},
                     placeholder = "Last Name",
                     enabled = false
                 )
-
                 Spacer(modifier = Modifier.height(16.dp))
-
                 FigmaContactTextField(
                     value = state.contact?.phoneNumber ?: "",
                     onValueChange = {},
@@ -217,7 +224,7 @@ fun ContactDetailScreen(
                 )
 
                 Spacer(modifier = Modifier.height(40.dp))
-                // Save Button
+
                 ActionOutlinedButton(
                     text = if (state.isSavedToDevice) "Saved to Phone" else "Save to My Phone Contact",
                     icon = Icons.Outlined.BookmarkBorder,
@@ -252,7 +259,8 @@ fun ContactDetailScreen(
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 50.dp)
             ) {
-                Column {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
                     AnimatedVisibility(
                         visible = showSuccessToast,
                         enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(),
@@ -260,6 +268,26 @@ fun ContactDetailScreen(
                     ) {
                         CustomToastMessage(
                             message = "User is added to your phone!"
+                        )
+                    }
+
+                    AnimatedVisibility(
+                        visible = showDeleteToast,
+                        enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(),
+                        exit = slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut()
+                    ) {
+                        CustomToastMessage(
+                            message = "User is deleted!"
+                        )
+                    }
+
+                    AnimatedVisibility(
+                        visible = showErrorToast,
+                        enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(),
+                        exit = slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut()
+                    ) {
+                        CustomToastMessage(
+                            message = errorMessage
                         )
                     }
                 }

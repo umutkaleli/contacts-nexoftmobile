@@ -16,3 +16,5 @@ val BorderGray = Color(0xFFE5E5EA)
 val TextGray = Color(0xFF8E8E93)
 val GreenSuccess = Color(0xFF34C759)
 val RedDestructive = Color(0xFFFF3B30)
+
+val LightBlueWhite = Color(0xFFECFAFF)

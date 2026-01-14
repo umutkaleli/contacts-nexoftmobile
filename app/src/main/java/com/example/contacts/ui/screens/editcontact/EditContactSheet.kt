@@ -5,6 +5,11 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,11 +23,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.contacts.ui.components.CustomToastMessage
 import com.example.contacts.ui.components.FigmaContactTextField
 import com.example.contacts.ui.components.ImagesourceOptionComponent
 import com.example.contacts.ui.components.ProfilePictureSelector
 import com.example.contacts.ui.theme.BluePrimary
 import com.example.contacts.util.createTempPictureUri
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,6 +41,11 @@ fun EditContactSheet(
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    var showUpdateToast by remember { mutableStateOf(false) }
+
+    var showErrorToast by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
 
     var showImageSourceOption by remember { mutableStateOf(false) }
     var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
@@ -58,13 +70,20 @@ fun EditContactSheet(
 
     LaunchedEffect(state.isUpdatedSuccessfully) {
         if (state.isUpdatedSuccessfully) {
-            Toast.makeText(context, "Contact Updated Successfully!", Toast.LENGTH_SHORT).show()
+            showUpdateToast = true
+            delay(2000)
+            showUpdateToast = false
             onNavigateHome()
         }
     }
 
     LaunchedEffect(state.error) {
-        state.error?.let { Toast.makeText(context, it, Toast.LENGTH_LONG).show() }
+        state.error?.let {
+            errorMessage = it
+            showErrorToast = true
+            delay(3000)
+            showErrorToast = false
+        }
     }
 
     ModalBottomSheet(
@@ -149,6 +168,30 @@ fun EditContactSheet(
                         .background(Color.Black.copy(0.2f)),
                     contentAlignment = Alignment.Center
                 ) { CircularProgressIndicator(color = Color.White) }
+            }
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 50.dp)
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+                    AnimatedVisibility(
+                        visible = showUpdateToast,
+                        enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(),
+                        exit = slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut()
+                    ) {
+                        CustomToastMessage(message = "User is updated!")
+                    }
+
+                    AnimatedVisibility(
+                        visible = showErrorToast,
+                        enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(),
+                        exit = slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut()
+                    ) {
+                        CustomToastMessage(message = errorMessage)
+                    }
+                }
             }
         }
     }

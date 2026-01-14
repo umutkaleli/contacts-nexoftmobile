@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material.icons.rounded.Person
 
 @Composable
@@ -138,14 +139,14 @@ fun ContactSwipeBackground(
 }
 
 @Composable
-fun CharacterHeader(char: Char) {
+fun CharacterHeader(title: String) {
     Surface(
         color = Color.White,
         shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            text = char.toString(),
+            text = title,
             color = Color.Gray,
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
@@ -161,10 +162,10 @@ fun NoResultsView() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
-            modifier = Modifier.size(100.dp).background(Color.LightGray.copy(alpha = 0.3f), CircleShape),
+            modifier = Modifier.size(96.dp).background(Color.Gray.copy(alpha = 0.3f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Icon(imageVector = Icons.Outlined.Search, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(50.dp))
+            Icon(imageVector = Icons.Outlined.SearchOff, contentDescription = null, tint = Color.White, modifier = Modifier.size(56.dp))
         }
         Spacer(modifier = Modifier.height(24.dp))
         Text(text = "No Results", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.Black)
@@ -172,7 +173,7 @@ fun NoResultsView() {
         Text(
             text = "The user you are looking for could not be found.",
             fontSize = 16.sp,
-            color = Color.Gray,
+            color = Color.Black,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 40.dp)
         )

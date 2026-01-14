@@ -1,7 +1,11 @@
 package com.example.contacts.ui.screens.contacts
 
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -23,6 +27,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.example.contacts.ui.components.*
 import com.example.contacts.ui.theme.BackgroundGray
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -37,24 +42,35 @@ fun ContactsScreen(
     val sheetState = rememberModalBottomSheetState()
     val focusManager = LocalFocusManager.current
 
+    var showCustomToast by remember { mutableStateOf(false) }
+    var toastMessage by remember { mutableStateOf("") }
+
     var revealedContactId by remember { mutableStateOf<String?>(null) }
-    val groupedContacts = remember(state.contacts) {
-        state.contacts.groupBy { contact ->
-            contact.firstName?.firstOrNull()?.uppercaseChar() ?: '#'
+
+    val groupedContacts = remember(state.contacts, state.searchQuery) {
+        if (state.searchQuery.isNotBlank()) {
+            mapOf("TOP NAME MATCHES" to state.contacts)
+        } else {
+            state.contacts.groupBy {
+                it.firstName?.firstOrNull()?.uppercase() ?: "#"
+            }
         }
     }
+
     val lifecycleOwner = LocalLifecycleOwner.current
-            DisposableEffect(lifecycleOwner) {
-                val observer = LifecycleEventObserver { _, event ->
-                    if (event == Lifecycle.Event.ON_RESUME) {
-                        viewModel.onEvent(ContactsEvent.CheckDeviceContacts)
-                    }
-                }
-                lifecycleOwner.lifecycle.addObserver(observer)
-                onDispose {
-                    lifecycleOwner.lifecycle.removeObserver(observer)
-                }
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.onEvent(ContactsEvent.LoadContacts)
+                viewModel.onEvent(ContactsEvent.CheckDeviceContacts)
             }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
     BackHandler(enabled = state.isSearchActive) {
         focusManager.clearFocus()
         viewModel.onEvent(ContactsEvent.OnSearchQueryChanged(""))
@@ -65,7 +81,10 @@ fun ContactsScreen(
         viewModel.effect.collect { effect ->
             when (effect) {
                 is ContactsUiEffect.ShowToast -> {
-                    Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
+                    toastMessage = effect.message
+                    showCustomToast = true
+                    delay(2000)
+                    showCustomToast = false
                 }
             }
         }
@@ -129,7 +148,7 @@ fun ContactsScreen(
                         groupedContacts.forEach { (initial, contactsForInitial) ->
 
                             item {
-                                CharacterHeader(char = initial)
+                                CharacterHeader(title = initial.toString())
 
                                 HorizontalDivider(
                                     modifier = Modifier
@@ -203,6 +222,22 @@ fun ContactsScreen(
                             }
                         }
                     }
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 30.dp)
+            ) {
+                AnimatedVisibility(
+                    visible = showCustomToast,
+                    enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(),
+                    exit = slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut()
+                ) {
+                    CustomToastMessage(
+                        message = toastMessage
+                    )
                 }
             }
         }

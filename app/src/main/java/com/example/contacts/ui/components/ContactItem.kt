@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.contacts.domain.model.Contact
+import com.example.contacts.ui.theme.BluePrimary
+import com.example.contacts.ui.theme.LightBlueWhite
 
 @Composable
 fun ContactItem(
@@ -37,13 +39,13 @@ fun ContactItem(
             modifier = Modifier
                 .size(50.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFF2F2F7)),
+                .background(LightBlueWhite),
             contentAlignment = Alignment.Center
         ) {
             if (contact.profileImageUrl.isNullOrEmpty()) {
                 Text(
                     text = contact.firstName?.take(1)?.uppercase() ?: "?",
-                    color = Color.Gray,
+                    color = BluePrimary,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp
                 )
