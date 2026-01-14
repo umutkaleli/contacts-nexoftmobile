@@ -127,8 +127,18 @@ fun ContactsScreen(
                         contentPadding = PaddingValues(bottom = 100.dp)
                     ) {
                         groupedContacts.forEach { (initial, contactsForInitial) ->
+
                             item {
                                 CharacterHeader(char = initial)
+
+                                HorizontalDivider(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(Color.White)
+                                        .padding(start = 16.dp, end = 16.dp),
+                                    color = BackgroundGray,
+                                    thickness = 1.dp
+                                )
                             }
 
                             itemsIndexed(
@@ -177,7 +187,10 @@ fun ContactsScreen(
 
                                     if (index < contactsForInitial.lastIndex) {
                                         HorizontalDivider(
-                                            modifier = Modifier.padding(start = 16.dp),
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .background(Color.White)
+                                                .padding(start = 16.dp, end= 16.dp),
                                             color = BackgroundGray,
                                             thickness = 1.dp
                                         )
