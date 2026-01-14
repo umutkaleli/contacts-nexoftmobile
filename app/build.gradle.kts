@@ -116,4 +116,6 @@ dependencies {
     // Lottie Animations
     implementation("com.airbnb.android:lottie-compose:6.0.0")
 
+    // Palette API
+    implementation("androidx.palette:palette-ktx:1.0.0")
 }

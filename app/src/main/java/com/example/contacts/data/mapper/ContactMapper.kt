@@ -16,7 +16,7 @@ fun UserResponse.toDomain(): Contact {
         lastName = lastName ?: "",
         phoneNumber = phoneNumber ?: "",
         profileImageUrl = profileImageUrl,
-        isSavedInDevice = false
+        isInDevice = false
     )
 }
 
@@ -28,7 +28,7 @@ fun ContactEntity.toDomain(): Contact {
         lastName = lastName,
         phoneNumber = phoneNumber,
         profileImageUrl = profileImageUrl,
-        isSavedInDevice = isSavedInDevice
+        isInDevice = isSavedInDevice == true
     )
 }
 

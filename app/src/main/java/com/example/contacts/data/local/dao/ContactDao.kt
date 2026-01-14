@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ContactDao {
 
-    //
     @Query("SELECT * FROM contacts")
     fun getContacts(): Flow<List<ContactEntity>>
 
@@ -21,15 +20,13 @@ interface ContactDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertContacts(contacts: List<ContactEntity>)
 
-    // Tekil ekleme/güncelleme
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertContact(contact: ContactEntity)
 
-    // ID'ye göre silme
     @Query("DELETE FROM contacts WHERE id = :id")
     suspend fun deleteContact(id: String)
 
-    // Tüm tabloyu temizle (Örn: Kullanıcı çıkış yaparsa)
     @Query("DELETE FROM contacts")
     suspend fun clearAll()
 }

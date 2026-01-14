@@ -7,7 +7,7 @@ data class Contact(
     val phoneNumber: String?,
     val profileImageUrl: String?,
     // Determines if the contact exists in the local device storage.
-    val isSavedInDevice: Boolean? = false
+    val isInDevice: Boolean = false
 ) {
     // Extra property to show full name if UI needs it.
     val fullName: String

@@ -9,7 +9,7 @@ import java.io.File
 
 interface ContactRepository {
 
-    // If the DB changes, the UI changes. That's why Flow used.
+    // If the DB changes, the UI changes.
     fun getContacts(): Flow<NetworkResult<List<Contact>>>
 
     // Fetches a single contact details using id.

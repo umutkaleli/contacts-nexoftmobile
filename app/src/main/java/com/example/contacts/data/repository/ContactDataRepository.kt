@@ -139,12 +139,12 @@ class ContactDataRepository(
         }
     }
 
-    override suspend fun uploadImage(file: File): NetworkResult<String> {
+    override suspend fun uploadImage(imageFile: File): NetworkResult<String> {
         return try {
 
-            val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+            val requestFile = imageFile.asRequestBody("image/*".toMediaTypeOrNull())
 
-            val body = MultipartBody.Part.createFormData("image", file.name, requestFile)
+            val body = MultipartBody.Part.createFormData("image", imageFile.name, requestFile)
 
             val response = api.uploadImage(body)
 
