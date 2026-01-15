@@ -23,6 +23,8 @@ import com.example.contacts.ui.components.ImagesourceOptionComponent
 import com.example.contacts.ui.components.ProfilePictureSelector
 import com.example.contacts.ui.theme.BluePrimary
 import com.example.contacts.util.createTempPictureUri
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -92,7 +94,8 @@ fun AddContactSheet(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp),
+                        .padding(horizontal = 24.dp)
+                        .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     // Header
